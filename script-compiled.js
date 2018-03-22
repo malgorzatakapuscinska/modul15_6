@@ -14,8 +14,6 @@ var StopWatch = function () {
 		this.display = display;
 		this.reset();
 		this.print(this.times);
-		this.pad0(value);
-		this.format(this.times);
 	}
 
 	_createClass(StopWatch, [{
@@ -28,23 +26,101 @@ var StopWatch = function () {
 			};
 		}
 	}, {
-		key: 'print',
-		value: function print() {
-			this.display.innerText = this.format(this.times);
-		}
-	}, {
 		key: 'pad0',
 		value: function pad0(value) {
 			var result = value.toString();
-			if (result.length < 2) {
+			var resultLength = result.length;
+			if (resultLength < 2) {
 				result = 0 + result;
 			}
 			return result;
 		}
 	}, {
+		key: 'print',
+		value: function print() {
+			this.display.innerText = this.format(this.times);
+		}
+	}, {
 		key: 'format',
 		value: function format(times) {
-			return pad0(times.minutes) + ':' + pad0(times.seconds) + ':' + pad0(Math.floor(times.miliseconds));
+			return this.pad0(times.minutes) + ':' + this.pad0(times.seconds) + ':' + this.pad0(Math.floor(times.miliseconds));
+		}
+	}, {
+		key: 'start',
+		value: function start() {
+			var _this = this;
+
+			if (!this.running) {
+				this.running = true;
+				this.watch = setInterval(function () {
+					return _this.step();
+				}, 10);
+			}
+		}
+	}, {
+		key: 'step',
+		value: function step() {
+			if (!this.running) return;
+			this.calculate();
+			this.print();
+		}
+	}, {
+		key: 'calculate',
+		value: function calculate() {
+			this.times.miliseconds += 1;
+
+			if (this.times.miliseconds >= 100) {
+				this.times.seconds += 1;
+				this.times.miliseconds = 0;
+			}
+
+			if (this.times.seconds >= 60) {
+				this.times.minutes += 1;
+				this.times.seconds = 0;
+			}
+		}
+	}, {
+		key: 'results',
+		value: function results(times) {
+			var elementLi = document.createElement('li');
+			var resultsEl = document.querySelector('.results');
+			if (this.times.minutes !== 0 || this.times.seconds !== 0 || this.times.miliseconds !== 0) {
+				elementLi.innerHTML = '' + this.format(this.times);
+				resultsEl.appendChild(elementLi);
+			}
+		}
+	}, {
+		key: 'stop',
+		value: function stop() {
+			this.running = false;
+			clearInterval(this.watch);
+			this.results(this.times);
+			this.reset(); //zapobiega ponownemu dodaniu do listy uzyskanego czasu
+		}
+	}, {
+		key: 'clearWatch',
+		value: function clearWatch() {
+			this.print();
+		}
+
+		/*clearResults(){
+  	let childs = document.querySelectorAll('li');
+  	const parentUl = document.querySelector('.results');
+  	let childsLength = childs.length;
+  	for(let i=0;i <= childsLength; i++){
+  		parentUl.removeChild(childs[i]);
+  		
+  	}
+  	
+  }*/
+
+	}, {
+		key: 'clearResults',
+		value: function clearResults() {
+			var parentUl = document.querySelector('.results');
+			while (parentUl.firstChild) {
+				parentUl.removeChild(parentUl.firstChild);
+			}
 		}
 	}]);
 
@@ -62,7 +138,17 @@ stopButton.addEventListener('click', function () {
 	return stopWatch.stop();
 });
 
-var startButton = document.getelementById('start');
+var startButton = document.getElementById('start');
 startButton.addEventListener('click', function () {
 	return stopWatch.start();
+});
+
+var clearButton = document.getElementById('clear');
+clearButton.addEventListener('click', function () {
+	return stopWatch.clearWatch();
+});
+
+var clearResultButton = document.getElementById('clear-results');
+clearResultButton.addEventListener('click', function () {
+	return stopWatch.clearResults();
 });

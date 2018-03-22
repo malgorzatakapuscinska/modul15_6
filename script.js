@@ -6,8 +6,6 @@ class StopWatch {
 		this.display = display;
 		this.reset();
 		this.print(this.times);
-		this.pad0(value);
-		this.format(this.times);
 	}
 	
 	reset(){
@@ -18,23 +16,89 @@ class StopWatch {
 		};
 	}
 	
-	print(){
-		this.display.innerText = this.format(this.times);
-	}
-	
 	pad0(value){
 		let result = value.toString();
-		if(result.length <2){
+		const resultLength = result.length;
+		if (resultLength <2){
 			result = 0 + result;
 		}
 		return result;
 	}
 	
-	format(times){
-		return `${pad0(times.minutes)}:${pad0(times.seconds)}:${pad0(Math.floor(times.miliseconds))}`;
+	print(){
+		this.display.innerText = this.format(this.times);
 	}
 	
 	
+	
+	format(times){
+		return `${this.pad0(times.minutes)}:${this.pad0(times.seconds)}:${this.pad0(Math.floor(times.miliseconds))}`;
+	}
+	
+	start(){
+		if(!this.running){
+		this.running = true;
+		this.watch = setInterval(() => this.step(), 10);
+		}
+	}
+	
+	step (){
+		if(!this.running) return;
+		this.calculate();
+		this.print();
+	}
+	
+	calculate(){
+		this.times.miliseconds += 1;
+		
+		if(this.times.miliseconds >= 100){
+			this.times.seconds += 1;
+			this.times.miliseconds = 0;
+		}
+		
+		if(this.times.seconds >= 60){
+			this.times.minutes += 1;
+			this.times.seconds = 0;
+		}
+	}
+	results(times){
+			let elementLi = document.createElement('li');
+			let resultsEl = document.querySelector('.results');
+				if(this.times.minutes !== 0 || this.times.seconds !== 0 || this.times.miliseconds !== 0 ){
+					elementLi.innerHTML = `${this.format(this.times)}`;
+					resultsEl.appendChild(elementLi);
+		
+				}
+			
+	}
+	
+	stop(){
+		this.running  = false;
+		clearInterval(this.watch);
+		this.results(this.times);
+		this.reset(); //zapobiega ponownemu dodaniu do listy uzyskanego czasu
+	}
+	
+	clearWatch(){
+		this.print();
+	}
+	
+	/*clearResults(){
+		let childs = document.querySelectorAll('li');
+		const parentUl = document.querySelector('.results');
+		let childsLength = childs.length;
+		for(let i=0;i <= childsLength; i++){
+			parentUl.removeChild(childs[i]);
+			
+		}
+		
+	}*/
+	clearResults() {
+		const parentUl = document.querySelector('.results');
+		while (parentUl.firstChild) {
+			parentUl.removeChild(parentUl.firstChild);
+		}
+	}
 }
 
 //create instance of stopWatch class
@@ -46,6 +110,12 @@ const stopWatch = new StopWatch(document.querySelector('.stopwatch'));
 let stopButton = document.getElementById('stop');
 stopButton.addEventListener('click', () => stopWatch.stop());
 
-let startButton = document.getelementById('start');
+let startButton = document.getElementById('start');
 startButton.addEventListener('click', () => stopWatch.start());
+
+let clearButton = document.getElementById('clear');
+clearButton.addEventListener('click', () => stopWatch.clearWatch());
+
+let clearResultButton = document.getElementById('clear-results');
+clearResultButton.addEventListener('click', () => stopWatch.clearResults());
 
